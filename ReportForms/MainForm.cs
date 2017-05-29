@@ -14,16 +14,46 @@ namespace ReportForms
         private readonly Font _categoryNodeFont;
         private readonly CategoryEditor _categoryEditor = new CategoryEditor();
         private readonly DisciplineEditor _disciplineEditor = new DisciplineEditor();
+        private TreeNode _lastSelectedNode;
 
         public MainForm()
         {
             InitializeComponent();
             treeView1.AfterSelect += TreeView1_AfterSelect;
             _categoryNodeFont = new Font(Font, Font.Style | FontStyle.Bold);
+            treeView1.AfterLabelEdit += TreeView1_AfterLabelEdit;
+            treeView1.PreviewKeyDown += TreeView1_PreviewKeyDown;
+            treeView1.LabelEdit = true;
+        }
+
+        private void TreeView1_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+            if (e.KeyCode == Keys.F2)
+            {
+                treeView1.SelectedNode.BeginEdit();
+            }
+        }
+
+        private void TreeView1_AfterLabelEdit(object sender, NodeLabelEditEventArgs e)
+        {
+            var type = e.Node.Tag.GetType();
+            if (type == typeof(Category))
+            {
+                var c = e.Node.Tag as Category;
+                c.Index = e.Label;
+                _categoryEditor.Build(c);
+            }
+            else if (type == typeof(Discipline))
+            {
+                var d = e.Node.Tag as Discipline;
+                d.Index = e.Label;
+                _disciplineEditor.Build(d);
+            }
         }
 
         private void TreeView1_AfterSelect(object sender, TreeViewEventArgs e)
         {
+            _lastSelectedNode = e.Node;
             var type = e.Node.Tag.GetType();
             if (type == typeof(Category))
             {
@@ -46,8 +76,36 @@ namespace ReportForms
             {
                 return;
             }
-            editor.Applied -= (sender, args) => UpdateTreeView();
-            editor.Applied += (sender, args) => UpdateTreeView();
+            editor.Applied -= (sender, args) => UpdateNode();
+            editor.Applied += (sender, args) => UpdateNode();
+        }
+
+        private void UpdateNode()
+        {
+            if (_lastSelectedNode == null)
+            {
+                UpdateTreeView();
+                return;
+            }
+            var type = _lastSelectedNode.Tag.GetType();
+            if (type == typeof(Discipline))
+            {
+                var d = _lastSelectedNode.Tag as Discipline;
+                _lastSelectedNode.Text = d.Index;
+            }
+            else if (type == typeof(Category))
+            {
+                var c = _lastSelectedNode.Tag as Category;
+                _lastSelectedNode.Nodes.Clear();
+                foreach (var discipline in c.Disciplines)
+                {
+                    _lastSelectedNode.Nodes.Add(new TreeNode(discipline.Index)
+                    {
+                        Tag = discipline
+                    });
+                }
+            }
+            _lastSelectedNode.Expand();
         }
 
         private void addCategoryToolStripMenuItem_Click(object sender, EventArgs e)
@@ -58,17 +116,23 @@ namespace ReportForms
 
         private void addDisciplineToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var cat = treeView1.SelectedNode?.Tag as Category;
+            _lastSelectedNode = treeView1.SelectedNode;
+            if (_lastSelectedNode == null)
+            {
+                return;
+            }
+            var cat = _lastSelectedNode.Tag as Category;
             if (cat == null)
             {
-                cat = treeView1.SelectedNode?.Parent.Tag as Category;
+                cat = _lastSelectedNode.Parent.Tag as Category;
+                _lastSelectedNode = _lastSelectedNode.Parent;
             }
             if (cat == null)
             {
                 return;
             }
             cat.Disciplines.Add(new Discipline($"Дисциплина{cat.Disciplines.Count + 1}"));
-            UpdateTreeView();
+            UpdateNode();
         }
 
         private void UpdateTreeView()
