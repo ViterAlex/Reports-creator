@@ -1,4 +1,6 @@
-﻿namespace ReportCreator
+﻿using System.Collections.Generic;
+
+namespace ReportCreator
 {
     public class Category : AcademicLoad
     {
@@ -10,5 +12,9 @@
         {
 
         }
+        /// <summary>
+        /// Дисциплины в данной категории
+        /// </summary>
+        public List<Discipline> Disciplines { get; } = new List<Discipline>();
     }
 }

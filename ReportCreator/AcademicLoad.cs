@@ -9,7 +9,7 @@
 
         protected AcademicLoad()
         {
-            
+
         }
         /// <summary>
         /// Название категории или дисциплины
@@ -30,6 +30,6 @@
         /// <summary>
         /// Обязательная нагрузка
         /// </summary>
-        public StatutoryLoad StatutoryLoad { get; set; }
+        public StatutoryLoad StatutoryLoad { get; set; } = new StatutoryLoad();
     }
 }

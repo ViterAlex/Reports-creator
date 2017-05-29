@@ -45,8 +45,8 @@ namespace ReportCreator
         /// </summary>
         public void AddCategory(Category category)
         {
-            var table = _wdDoc.Tables[1];
-            table.Rows.Add();
+            var table = AddRow();
+
             var row = (int)table.Rows.Count;
             table.Cell(row, 1).Range.Font.Bold = 1;
             table.Cell(row, 2).Range.Font.Bold = 1;
@@ -68,13 +68,6 @@ namespace ReportCreator
             table.Cell(row, 16).Range.Orientation = 0;//wdTextOrientationHorizontal;
 
             AutoSizeRow(table, row);
-
-            //Объединение ячеек с 3 по 10 столбец
-            var start = (int)table.Cell(row, 3).Range.Start;
-            var end = (int)table.Cell(row, 10).Range.End;
-            _wdDoc.Range(start, end).Cells.Merge();
-
-
         }
         /// <summary>
         /// Сохранение документа.
@@ -112,15 +105,15 @@ namespace ReportCreator
 
             table.Cell(row, 11).Range.Text = discipline.MaxLoad.GetString();
             table.Cell(row, 12).Range.Text = discipline.SelfGuided.GetString();
-            table.Cell(row, 13).Range.Text = discipline.StatutoryLoad.Total.GetString();
+            table.Cell(row, 13).Range.Text = discipline.StatutoryLoad?.Total.GetString();
 
-            table.Cell(row, 14).Range.Text = discipline.StatutoryLoad.LIZWithoutDivision.GetString();
+            table.Cell(row, 14).Range.Text = discipline.StatutoryLoad?.LIZWithoutDivision.GetString();
             table.Cell(row, 14).Range.Orientation = 0;//wdTextOrientationHorizontal;
 
-            table.Cell(row, 15).Range.Text = discipline.StatutoryLoad.LIZWithDivision.GetString();
+            table.Cell(row, 15).Range.Text = discipline.StatutoryLoad?.LIZWithDivision.GetString();
             table.Cell(row, 15).Range.Orientation = 0;//wdTextOrientationHorizontal;
 
-            table.Cell(row, 16).Range.Text = discipline.StatutoryLoad.TermProject.GetString();
+            table.Cell(row, 16).Range.Text = discipline.StatutoryLoad?.TermProject.GetString();
             table.Cell(row, 16).Range.Orientation = 0;//wdTextOrientationHorizontal;
 
             for (var i = 0; i < discipline.WorkloadDistribution.Length; i++)
